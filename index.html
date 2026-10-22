@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мой Сайт</title>
+    <!-- Подключаем красивый современный шрифт (Space Grotesk) -->
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Базовые настройки */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #121212;
+            color: #e0e0e0;
+            font-family: 'Space Grotesk', sans-serif;
+            overflow: hidden; /* Убираем скролл, если фон вылезает */
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Интерактивный фон (Canvas) */
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
+            background: radial-gradient(circle at 50% 50%, #1a1a24 0%, #0d0d0d 100%);
+        }
+
+        /* Навигация */
+        nav {
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            z-index: 10;
+            background: rgba(18, 18, 18, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(138, 43, 226, 0.2);
+        }
+
+        /* Кнопки навигации */
+        .nav-btn {
+            background: transparent;
+            color: #a0a0a0;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-family: inherit;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-btn:hover {
+            color: #fff;
+            border-color: #8a2be2;
+            box-shadow: 0 0 15px rgba(138, 43, 226, 0.4);
+        }
+
+        /* Анимация нажатия (поддёргивание и расплывание) */
+        .nav-btn:active, .nav-btn.clicked {
+            transform: scale(0.92) translateY(2px);
+            box-shadow: 0 0 25px rgba(0, 191, 255, 0.6);
+            filter: blur(0.5px);
+        }
+
+        .nav-btn.active {
+            color: #fff;
+            background: rgba(138, 43, 226, 0.2);
+            border-color: #8a2be2;
+        }
+
+        /* Контейнер для страниц */
+        main {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            position: relative;
+            z-index: 5;
+        }
+
+        /* Секции (страницы) */
+        .page {
+            display: none;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+            text-align: center;
+            max-width: 600px;
+            background: rgba(30, 30, 30, 0.5);
+            backdrop-filter: blur(15px);
+            padding: 40px;
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .page.active {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Заголовки */
+        h1 {
+            font-size: 32px;
+            margin-bottom: 20px;
+            background: linear-gradient(45deg, #8a2be2, #00bfff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 700;
+        }
+
+        p {
+            font-size: 18px;
+            line-height: 1.6;
+            color: #b0b0b0;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Фон с частицами -->
+    <canvas id="bg-canvas"></canvas>
+
+    <!-- Навигация -->
+    <nav>
+        <button class="nav-btn active" onclick="changePage('home', this)">Главная</button>
+        <button class="nav-btn" onclick="changePage('info', this)">Раздел 1</button>
+        <button class="nav-btn" onclick="changePage('contacts', this)">Раздел 2</button>
+    </nav>
+
+    <!-- Контент -->
+    <main>
+        <!-- Страница 1 -->
+        <div id="home" class="page active">
+            <h1>Добро пожаловать</h1>
+            <p>Тут будет твой основной текст. Пока что это заготовка, но выглядит уже стильно. Кнопки сверху работают, фон реагирует на движения.</p>
+        </div>
+
+        <!-- Страница 2 -->
+        <div id="info" class="page">
+            <h1>Раздел 1</h1>
+            <p>Здесь ты сможешь разместить информацию о проекте, ссылки или картинки. Переходы плавные и без перезагрузки страницы.</p>
+        </div>
+
+        <!-- Страница 3 -->
+        <div id="contacts" class="page">
+            <h1>Раздел 2</h1>
+            <p>Место для контактов или дополнительной инфы. Дизайн адаптирован под телефоны, так что с Pixel 7 всё будет смотреться идеально.</p>
+        </div>
+    </main>
+
+    <script>
+        // --- Логика переключения страниц ---
+        function changePage(pageId, btnElement) {
+            // Убираем активный класс у всех страниц и кнопок
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            // Добавляем класс анимации нажатия
+            btnElement.classList.add('clicked');
+            setTimeout(() => btnElement.classList.remove('clicked'), 200);
+
+            // Показываем нужную страницу
+            const targetPage = document.getElementById(pageId);
+            targetPage.classList.add('active');
+            
+            // Делаем кнопку активной
+            btnElement.classList.add('active');
+        }
+
+        // --- Интерактивный фон (Частицы) ---
+        const canvas = document.getElementById('bg-canvas');
+        const ctx = canvas.getContext('2d');
+        let width, height;
+
+        // Настраиваем размер под экран телефона
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        // Объект для отслеживания касания/мыши
+        const mouse = { x: width / 2, y: height / 2, radius: 120 };
+
+        window.addEventListener('mousemove', (e) => {
+            mouse.x = e.clientX;
+            mouse.y = e.clientY;
+        });
+
+        window.addEventListener('touchmove', (e) => {
+            mouse.x = e.touches[0].clientX;
+            mouse.y = e.touches[0].clientY;
+        });
+
+        // Создаем частицы
+        const particles = [];
+        const particleCount = 60; // Количество точек на фоне
+
+        for (let i = 0; i < particleCount; i++) {
+            particles.push({
+                x: Math.random() * width,
+                y: Math.random() * height,
+                vx: (Math.random() - 0.5) * 1.5,
+                vy: (Math.random() - 0.5) * 1.5,
+                size: Math.random() * 2 + 1
+            });
+        }
+
+        // Анимация фона
+        function animate() {
+            requestAnimationFrame(animate);
+            ctx.clearRect(0, 0, width, height);
+
+            particles.forEach(p => {
+                // Движение
+                p.x += p.vx;
+                p.y += p.vy;
+
+                // Отталкивание от краев
+                if (p.x < 0 || p.x > width) p.vx *= -1;
+                if (p.y < 0 || p.y > height) p.vy *= -1;
+
+                // Рисуем точки (сине-фиолетовые)
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(138, 43, 226, 0.6)'; // Фиолетовый
+                ctx.fill();
+
+                // Линии между точками, если они близко
+                particles.forEach(p2 => {
+                    const dx = p.x - p2.x;
+                    const dy = p.y - p2.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+
+                    if (dist < 100) {
+                        ctx.beginPath();
+                        ctx.moveTo(p.x, p.y);
+                        ctx.lineTo(p2.x, p2.y);
+                        // Цвет линий (синий с прозрачностью)
+                        ctx.strokeStyle = `rgba(0, 191, 255, ${1 - dist / 100})`;
+                        ctx.lineWidth = 0.5;
+                        ctx.stroke();
+                    }
+                });
+
+                // Реакция на палец/мышь
+                const dx = p.x - mouse.x;
+                const dy = p.y - mouse.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                if (dist < mouse.radius) {
+                    // Если палец близко, точка слегка отодвигается
+                    p.x += dx * 0.02;
+                    p.y += dy * 0.02;
+                }
+            });
+        }
+
+        animate();
+    </script>
+</body>
+</html>
